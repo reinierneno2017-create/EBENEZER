@@ -562,7 +562,7 @@ input,textarea,select,.product-modal-box,.pm-info,.pm-close{transition:backgroun
           <div class="field"><label>Stock *</label><input id="pStock" type="number" step="1" min="0" required value="10"></div>
           <div class="field"><label>Categoría *</label><input id="pCategory" required list="catList" placeholder="Ej: Cocina"><datalist id="catList"></datalist></div>
           <div class="field full"><label>Imagen (URL)</label><input id="pImage" placeholder="https://..."></div>
-          <div class="field full"><label>O subir imagen desde tu equipo (JPG, PNG, WebP — máx 5MB)</label><input id="pFile" type="file" accept="image/jpeg,image/png,image/webp,image/jpg"></div>
+          <div class="field full"><label>O subir imagen (JPG/PNG — máx 900 KB, redúcela antes)</label><input id="pFile" type="file" accept="image/jpeg,image/png,image/webp,image/jpg"></div>
           <div class="field full"><label>Descripción</label><textarea id="pDesc"></textarea></div>
         </div>
         <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap">
@@ -583,7 +583,7 @@ input,textarea,select,.product-modal-box,.pm-info,.pm-close{transition:backgroun
           <div class="field full"><label>Subtítulo</label><input id="sSubtitle"></div>
           <div class="field"><label>Texto del botón</label><input id="sCta"></div>
           <div class="field"><label>Imagen (URL)</label><input id="sImage"></div>
-          <div class="field full"><label>O subir imagen (JPG, PNG, WebP — máx 5MB)</label><input id="sFile" type="file" accept="image/jpeg,image/png,image/webp,image/jpg"></div>
+          <div class="field full"><label>O subir imagen (JPG/PNG — máx 900 KB, redúcela antes)</label><input id="sFile" type="file" accept="image/jpeg,image/png,image/webp,image/jpg"></div>
         </div>
         <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap">
           <button type="submit" class="btn btn-primary btn-sm">💾 Guardar</button>
@@ -619,7 +619,7 @@ input,textarea,select,.product-modal-box,.pm-info,.pm-close{transition:backgroun
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 /* =========================================================
-   EBENEZER — v6 con botón de refrescar y crédito
+   EBENEZER — v7 (imágenes base64 + botón refrescar + crédito)
    ========================================================= */
 const SUPABASE_URL = 'https://efwwatcriaeccqznoozn.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVmd3dhdGNyaWFlY2Nxem5vb3puIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQxMTUwMDQsImV4cCI6MjEwOTY5MTAwNH0.CgdwGvVBpRXV6Q7XIPOqsM2COCMK5ycBlGP89qmr6dE';
@@ -690,30 +690,28 @@ function toggleTheme() {
   $('#themeBtn').textContent = cur === 'dark' ? '☀️' : '🌙';
 }
 
-/* ---------- SUBIR IMAGEN ---------- */
+/* =========================================================
+   CONVERTIR IMAGEN A BASE64 (método que ya te funcionaba)
+   Límite seguro: 900 KB para que no rompa la fila de Supabase
+   ========================================================= */
 async function uploadImageToStorage(file) {
-  if (!USE_SUPABASE) {
-    return { url: await new Promise(res => {
-      const r = new FileReader();
-      r.onload = () => res(r.result);
-      r.readAsDataURL(file);
-    }), error: null };
-  }
+  // Validar formato
   const validTypes = ['image/jpeg','image/jpg','image/png','image/webp'];
   if (!validTypes.includes(file.type)) {
     return { error: { message: 'Formato no válido. Usa JPG, PNG o WebP.' } };
   }
-  if (file.size > 5 * 1024 * 1024) {
-    return { error: { message: 'La imagen supera los 5MB.' } };
+  // Validar tamaño (900 KB)
+  if (file.size > 900 * 1024) {
+    return { error: { message: 'La imagen debe pesar menos de 900 KB. Redúcela antes de subirla.' } };
   }
-  const ext = (file.name.split('.').pop() || 'jpg').toLowerCase().replace('jpeg','jpg');
-  const fileName = `img-${Date.now()}-${Math.random().toString(36).slice(2,8)}.${ext}`;
-  const { error: upErr } = await db.storage
-    .from('media')
-    .upload(fileName, file, { cacheControl: '3600', upsert: false, contentType: file.type });
-  if (upErr) return { error: upErr };
-  const { data: pub } = db.storage.from('media').getPublicUrl(fileName);
-  return { url: pub.publicUrl, error: null };
+  // Convertir a base64 (esto es lo que funcionaba antes)
+  const url = await new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(r.result);
+    r.onerror = () => rej(new Error('Error leyendo archivo'));
+    r.readAsDataURL(file);
+  });
+  return { url, error: null };
 }
 
 /* ---------- DATA LAYER ---------- */
@@ -1185,7 +1183,6 @@ function bindEvents() {
   $$('#nav a').forEach(a => a.addEventListener('click', () => $('#nav').classList.remove('open')));
   $('#themeBtn').addEventListener('click', toggleTheme);
 
-  /* --- Botón Refrescar --- */
   $('#refreshBtn').addEventListener('click', async () => {
     const btn = $('#refreshBtn');
     btn.classList.add('spinning');
@@ -1277,6 +1274,7 @@ function bindEvents() {
   }));
   $('#logoutBtn').addEventListener('click', logoutAdmin);
 
+  /* ---------- Guardar producto (base64) ---------- */
   $('#productForm').addEventListener('submit', async e => {
     e.preventDefault();
     const id = $('#pId').value;
@@ -1287,11 +1285,11 @@ function bindEvents() {
       let imageUrl = $('#pImage').value.trim();
       const file = $('#pFile').files[0];
       if (file) {
-        btn.textContent = '⏳ Subiendo imagen...';
+        btn.textContent = '⏳ Procesando imagen...';
         const { url, error: upErr } = await uploadImageToStorage(file);
-        if (upErr) { toast('❌ Error subiendo imagen: ' + upErr.message, 'err'); return; }
+        if (upErr) { toast('❌ ' + upErr.message, 'err'); return; }
         imageUrl = url;
-        toast('📷 Imagen subida', 'ok');
+        toast('📷 Imagen cargada', 'ok');
       }
       if (!imageUrl) imageUrl = PLACEHOLDER;
       btn.textContent = '⏳ Guardando...';
@@ -1334,6 +1332,7 @@ function bindEvents() {
     }
   });
 
+  /* ---------- Guardar slide (base64) ---------- */
   $('#slideForm').addEventListener('submit', async e => {
     e.preventDefault();
     const idx = $('#sIndex').value;
@@ -1344,11 +1343,11 @@ function bindEvents() {
       let imageUrl = $('#sImage').value.trim();
       const file = $('#sFile').files[0];
       if (file) {
-        btn.textContent = '⏳ Subiendo imagen...';
+        btn.textContent = '⏳ Procesando imagen...';
         const { url, error: upErr } = await uploadImageToStorage(file);
-        if (upErr) { toast('❌ Error subiendo imagen: ' + upErr.message, 'err'); return; }
+        if (upErr) { toast('❌ ' + upErr.message, 'err'); return; }
         imageUrl = url;
-        toast('📷 Imagen subida', 'ok');
+        toast('📷 Imagen cargada', 'ok');
       }
       if (!imageUrl) imageUrl = PLACEHOLDER;
       btn.textContent = '⏳ Guardando...';
