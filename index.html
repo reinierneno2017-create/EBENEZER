@@ -68,7 +68,7 @@ input,textarea,select,.product-modal-box,.pm-info,.pm-close{transition:backgroun
 .btn-wa:disabled{opacity:.45;cursor:not-allowed;filter:none;transform:none;box-shadow:none}
 .btn-sm{padding:9px 16px;font-size:13px}
 .header{position:sticky;top:0;z-index:60;background:var(--header-bg);backdrop-filter:blur(14px);border-bottom:1px solid var(--border)}
-.header-inner{display:flex;align-items:center;gap:18px;height:76px;position:relative}
+.header-inner{display:flex;align-items:center;gap:14px;height:76px;position:relative}
 .logo{display:flex;align-items:center;gap:12px;margin-right:auto}
 .logo-mark{width:46px;height:46px;border-radius:14px;background:linear-gradient(135deg,var(--brand),var(--brand-2));color:var(--gold);display:grid;place-items:center;font-weight:900;font-size:23px;box-shadow:0 8px 18px rgba(11,30,53,.28)}
 .logo-text{display:flex;flex-direction:column;line-height:1.1;font-weight:800;letter-spacing:.6px;font-size:19px;color:var(--heading)}
@@ -80,6 +80,11 @@ input,textarea,select,.product-modal-box,.pm-info,.pm-close{transition:backgroun
 .nav a:hover::after{width:100%}
 .theme-btn{width:44px;height:44px;border-radius:50%;background:var(--surface-3);color:var(--heading);display:grid;place-items:center;font-size:18px;transition:.2s;flex:none;line-height:1}
 .theme-btn:hover{transform:rotate(15deg) scale(1.05)}
+.refresh-btn{width:44px;height:44px;border-radius:50%;background:var(--surface-3);color:var(--heading);display:grid;place-items:center;font-size:18px;transition:.2s;flex:none;line-height:1;cursor:pointer}
+.refresh-btn:hover{background:var(--gold);color:#231a00}
+.refresh-btn.spinning{animation:spin .7s linear infinite}
+.refresh-btn:disabled{opacity:.6;cursor:wait}
+@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
 .cart-btn{display:flex;align-items:center;gap:9px;background:var(--btn-dark-bg);color:var(--btn-dark-text);padding:11px 20px;border-radius:999px;font-weight:700;font-size:14px;transition:.25s}
 .cart-btn:hover{filter:brightness(1.12);transform:translateY(-1px)}
 .badge{background:var(--gold);color:#0b1e35;border-radius:999px;min-width:22px;height:22px;display:grid;place-items:center;font-size:12px;font-weight:900;padding:0 6px}
@@ -168,6 +173,8 @@ input,textarea,select,.product-modal-box,.pm-info,.pm-close{transition:backgroun
 .footer-bottom{border-top:1px solid rgba(255,255,255,.1);padding:22px 0;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;font-size:12.5px;color:#7e93ab}
 .admin-link{color:#7e93ab;font-size:12.5px;text-decoration:underline;text-underline-offset:3px;transition:.2s}
 .admin-link:hover{color:var(--gold)}
+.credit{color:#7e93ab;font-size:12.5px;letter-spacing:.3px}
+.credit strong{color:var(--gold);font-weight:700}
 .overlay{position:fixed;inset:0;background:var(--overlay);backdrop-filter:blur(3px);z-index:90;opacity:0;visibility:hidden;transition:.3s}
 .overlay.show{opacity:1;visibility:visible}
 .drawer{position:fixed;top:0;right:0;height:100%;width:min(440px,100%);background:var(--drawer-bg);z-index:100;transform:translateX(102%);transition:transform .38s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;box-shadow:-20px 0 60px rgba(0,0,0,.22)}
@@ -322,6 +329,7 @@ input,textarea,select,.product-modal-box,.pm-info,.pm-close{transition:backgroun
   .tab-panel{padding:18px}
   .stats{grid-template-columns:1fr 1fr}
   .feature{padding:6px 0}
+  .footer-bottom{flex-direction:column;text-align:center;gap:10px}
 }
 </style>
 </head>
@@ -340,6 +348,7 @@ input,textarea,select,.product-modal-box,.pm-info,.pm-close{transition:backgroun
       <a href="#contacto">Contacto</a>
     </nav>
     <button class="theme-btn" id="themeBtn" aria-label="Cambiar tema">🌙</button>
+    <button class="refresh-btn" id="refreshBtn" aria-label="Actualizar" title="Actualizar contenido">🔄</button>
     <button class="cart-btn" id="cartBtn" aria-label="Abrir carrito">
       <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
       <span class="lbl">Carrito</span>
@@ -445,6 +454,7 @@ input,textarea,select,.product-modal-box,.pm-info,.pm-close{transition:backgroun
     </div>
     <div class="footer-bottom">
       <span>© <span id="year"></span> EBENEZER. Todos los derechos reservados. <span class="mode-badge" id="modeBadge">LOCAL</span></span>
+      <span class="credit">Desarrollado por <strong>Reynier Velázquez Morales</strong></span>
       <button class="admin-link" id="openAdmin">Panel de administración</button>
     </div>
   </div>
@@ -552,7 +562,7 @@ input,textarea,select,.product-modal-box,.pm-info,.pm-close{transition:backgroun
           <div class="field"><label>Stock *</label><input id="pStock" type="number" step="1" min="0" required value="10"></div>
           <div class="field"><label>Categoría *</label><input id="pCategory" required list="catList" placeholder="Ej: Cocina"><datalist id="catList"></datalist></div>
           <div class="field full"><label>Imagen (URL)</label><input id="pImage" placeholder="https://..."></div>
-          <div class="field full"><label>O subir imagen desde tu equipo</label><input id="pFile" type="file" accept="image/*"></div>
+          <div class="field full"><label>O subir imagen desde tu equipo (JPG, PNG, WebP — máx 5MB)</label><input id="pFile" type="file" accept="image/jpeg,image/png,image/webp,image/jpg"></div>
           <div class="field full"><label>Descripción</label><textarea id="pDesc"></textarea></div>
         </div>
         <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap">
@@ -573,7 +583,7 @@ input,textarea,select,.product-modal-box,.pm-info,.pm-close{transition:backgroun
           <div class="field full"><label>Subtítulo</label><input id="sSubtitle"></div>
           <div class="field"><label>Texto del botón</label><input id="sCta"></div>
           <div class="field"><label>Imagen (URL)</label><input id="sImage"></div>
-          <div class="field full"><label>O subir imagen</label><input id="sFile" type="file" accept="image/*"></div>
+          <div class="field full"><label>O subir imagen (JPG, PNG, WebP — máx 5MB)</label><input id="sFile" type="file" accept="image/jpeg,image/png,image/webp,image/jpg"></div>
         </div>
         <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap">
           <button type="submit" class="btn btn-primary btn-sm">💾 Guardar</button>
@@ -609,7 +619,7 @@ input,textarea,select,.product-modal-box,.pm-info,.pm-close{transition:backgroun
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 /* =========================================================
-   EBENEZER — v4 con Supabase (credenciales configuradas)
+   EBENEZER — v6 con botón de refrescar y crédito
    ========================================================= */
 const SUPABASE_URL = 'https://efwwatcriaeccqznoozn.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVmd3dhdGNyaWFlY2Nxem5vb3puIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQxMTUwMDQsImV4cCI6MjEwOTY5MTAwNH0.CgdwGvVBpRXV6Q7XIPOqsM2COCMK5ycBlGP89qmr6dE';
@@ -667,7 +677,7 @@ function saveCart() { try { localStorage.setItem(KEY_C, JSON.stringify(state.car
 let toastTimer;
 function toast(msg, type = '') {
   const t = $('#toast'); t.textContent = msg; t.className = 'toast show ' + type;
-  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.className = 'toast ' + type, 2800);
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.className = 'toast ' + type, 3200);
 }
 function initTheme() {
   const cur = document.documentElement.getAttribute('data-theme') || 'light';
@@ -678,6 +688,32 @@ function toggleTheme() {
   document.documentElement.setAttribute('data-theme', cur);
   try { localStorage.setItem(KEY_T, cur); } catch (e) {}
   $('#themeBtn').textContent = cur === 'dark' ? '☀️' : '🌙';
+}
+
+/* ---------- SUBIR IMAGEN ---------- */
+async function uploadImageToStorage(file) {
+  if (!USE_SUPABASE) {
+    return { url: await new Promise(res => {
+      const r = new FileReader();
+      r.onload = () => res(r.result);
+      r.readAsDataURL(file);
+    }), error: null };
+  }
+  const validTypes = ['image/jpeg','image/jpg','image/png','image/webp'];
+  if (!validTypes.includes(file.type)) {
+    return { error: { message: 'Formato no válido. Usa JPG, PNG o WebP.' } };
+  }
+  if (file.size > 5 * 1024 * 1024) {
+    return { error: { message: 'La imagen supera los 5MB.' } };
+  }
+  const ext = (file.name.split('.').pop() || 'jpg').toLowerCase().replace('jpeg','jpg');
+  const fileName = `img-${Date.now()}-${Math.random().toString(36).slice(2,8)}.${ext}`;
+  const { error: upErr } = await db.storage
+    .from('media')
+    .upload(fileName, file, { cacheControl: '3600', upsert: false, contentType: file.type });
+  if (upErr) return { error: upErr };
+  const { data: pub } = db.storage.from('media').getPublicUrl(fileName);
+  return { url: pub.publicUrl, error: null };
 }
 
 /* ---------- DATA LAYER ---------- */
@@ -1148,6 +1184,30 @@ function bindEvents() {
   $('#menuBtn').addEventListener('click', () => $('#nav').classList.toggle('open'));
   $$('#nav a').forEach(a => a.addEventListener('click', () => $('#nav').classList.remove('open')));
   $('#themeBtn').addEventListener('click', toggleTheme);
+
+  /* --- Botón Refrescar --- */
+  $('#refreshBtn').addEventListener('click', async () => {
+    const btn = $('#refreshBtn');
+    btn.classList.add('spinning');
+    btn.disabled = true;
+    try {
+      await refreshProducts();
+      await refreshSlides();
+      await refreshSettings();
+      toast('✅ Contenido actualizado', 'ok');
+    } catch (e) {
+      console.error(e);
+      toast('❌ Error al actualizar. Recargando...', 'err');
+      setTimeout(() => location.reload(), 800);
+      return;
+    } finally {
+      setTimeout(() => {
+        btn.classList.remove('spinning');
+        btn.disabled = false;
+      }, 600);
+    }
+  });
+
   $('#cartBtn').addEventListener('click', openCart);
   $('#closeCart').addEventListener('click', closeCart);
   $('#overlay').addEventListener('click', closeCart);
@@ -1216,31 +1276,47 @@ function bindEvents() {
     if (t.dataset.tab === 'pedidos') renderAdminOrders();
   }));
   $('#logoutBtn').addEventListener('click', logoutAdmin);
-  $('#pFile').addEventListener('change', e => {
-    const f = e.target.files[0]; if (!f) return;
-    if (f.size > 900 * 1024) { toast('⚠️ Máx 900KB. Usa URL.', 'err'); e.target.value = ''; return; }
-    const r = new FileReader();
-    r.onload = () => { $('#pImage').value = r.result; toast('📷 Imagen cargada', 'ok'); };
-    r.readAsDataURL(f);
-  });
+
   $('#productForm').addEventListener('submit', async e => {
     e.preventDefault();
     const id = $('#pId').value;
-    const payload = {
-      name: $('#pName').value.trim(),
-      price: parseFloat($('#pPrice').value) || 0,
-      stock: Math.max(0, parseInt($('#pStock').value, 10) || 0),
-      category: $('#pCategory').value.trim() || 'General',
-      image: $('#pImage').value.trim() || PLACEHOLDER,
-      description: $('#pDesc').value.trim()
-    };
-    if (!payload.name) { toast('⚠️ Nombre obligatorio', 'err'); return; }
-    if (id) payload.id = id;
-    const { error } = await upsertProduct(payload);
-    if (error) { toast('❌ ' + error.message, 'err'); return; }
-    toast(id ? '✅ Actualizado' : '✅ Agregado', 'ok');
-    clearProductForm();
-    await refreshProducts();
+    const btn = e.target.querySelector('button[type="submit"]');
+    const oldText = btn.textContent;
+    btn.disabled = true;
+    try {
+      let imageUrl = $('#pImage').value.trim();
+      const file = $('#pFile').files[0];
+      if (file) {
+        btn.textContent = '⏳ Subiendo imagen...';
+        const { url, error: upErr } = await uploadImageToStorage(file);
+        if (upErr) { toast('❌ Error subiendo imagen: ' + upErr.message, 'err'); return; }
+        imageUrl = url;
+        toast('📷 Imagen subida', 'ok');
+      }
+      if (!imageUrl) imageUrl = PLACEHOLDER;
+      btn.textContent = '⏳ Guardando...';
+      const payload = {
+        name: $('#pName').value.trim(),
+        price: parseFloat($('#pPrice').value) || 0,
+        stock: Math.max(0, parseInt($('#pStock').value, 10) || 0),
+        category: $('#pCategory').value.trim() || 'General',
+        image: imageUrl,
+        description: $('#pDesc').value.trim()
+      };
+      if (!payload.name) { toast('⚠️ Nombre obligatorio', 'err'); return; }
+      if (id) payload.id = id;
+      const { error } = await upsertProduct(payload);
+      if (error) { toast('❌ ' + error.message, 'err'); return; }
+      toast(id ? '✅ Producto actualizado' : '✅ Producto agregado', 'ok');
+      clearProductForm();
+      await refreshProducts();
+    } catch (err) {
+      console.error(err);
+      toast('❌ Error inesperado: ' + err.message, 'err');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = oldText;
+    }
   });
   $('#clearForm').addEventListener('click', clearProductForm);
   $('#adminProducts').addEventListener('click', async e => {
@@ -1254,33 +1330,49 @@ function bindEvents() {
       if (error) { toast('❌ ' + error.message, 'err'); return; }
       state.cart = state.cart.filter(x => x.id !== p.id); saveCart();
       await refreshProducts();
-      toast('🗑️ Eliminado');
+      toast('🗑️ Producto eliminado');
     }
   });
-  $('#sFile').addEventListener('change', e => {
-    const f = e.target.files[0]; if (!f) return;
-    if (f.size > 900 * 1024) { toast('⚠️ Máx 900KB.', 'err'); e.target.value = ''; return; }
-    const r = new FileReader();
-    r.onload = () => { $('#sImage').value = r.result; toast('📷 Imagen cargada', 'ok'); };
-    r.readAsDataURL(f);
-  });
+
   $('#slideForm').addEventListener('submit', async e => {
     e.preventDefault();
     const idx = $('#sIndex').value;
-    const payload = {
-      title: $('#sTitle').value.trim(),
-      subtitle: $('#sSubtitle').value.trim(),
-      cta: $('#sCta').value.trim() || 'Ver productos',
-      image: $('#sImage').value.trim() || PLACEHOLDER
-    };
-    if (!payload.title) { toast('⚠️ Título obligatorio', 'err'); return; }
-    if (idx) payload.id = idx;
-    else payload.position = state.slides.length + 1;
-    const { error } = await upsertSlide(payload);
-    if (error) { toast('❌ ' + error.message, 'err'); return; }
-    toast(idx ? '✅ Actualizada' : '✅ Agregada', 'ok');
-    clearSlideForm();
-    await refreshSlides();
+    const btn = e.target.querySelector('button[type="submit"]');
+    const oldText = btn.textContent;
+    btn.disabled = true;
+    try {
+      let imageUrl = $('#sImage').value.trim();
+      const file = $('#sFile').files[0];
+      if (file) {
+        btn.textContent = '⏳ Subiendo imagen...';
+        const { url, error: upErr } = await uploadImageToStorage(file);
+        if (upErr) { toast('❌ Error subiendo imagen: ' + upErr.message, 'err'); return; }
+        imageUrl = url;
+        toast('📷 Imagen subida', 'ok');
+      }
+      if (!imageUrl) imageUrl = PLACEHOLDER;
+      btn.textContent = '⏳ Guardando...';
+      const payload = {
+        title: $('#sTitle').value.trim(),
+        subtitle: $('#sSubtitle').value.trim(),
+        cta: $('#sCta').value.trim() || 'Ver productos',
+        image: imageUrl
+      };
+      if (!payload.title) { toast('⚠️ Título obligatorio', 'err'); return; }
+      if (idx) payload.id = idx;
+      else payload.position = state.slides.length + 1;
+      const { error } = await upsertSlide(payload);
+      if (error) { toast('❌ ' + error.message, 'err'); return; }
+      toast(idx ? '✅ Diapositiva actualizada' : '✅ Diapositiva agregada', 'ok');
+      clearSlideForm();
+      await refreshSlides();
+    } catch (err) {
+      console.error(err);
+      toast('❌ Error inesperado: ' + err.message, 'err');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = oldText;
+    }
   });
   $('#clearSlide').addEventListener('click', clearSlideForm);
   $('#adminSlides').addEventListener('click', async e => {
@@ -1304,9 +1396,10 @@ function bindEvents() {
       const { error } = await deleteSlide(rm.dataset.sdel);
       if (error) { toast('❌ ' + error.message, 'err'); return; }
       await refreshSlides();
-      toast('🗑️ Eliminada');
+      toast('🗑️ Diapositiva eliminada');
     }
   });
+
   $('#saveSettings').addEventListener('click', async () => {
     const orders = $('#cWhatsappOrders').value.replace(/\D/g, '');
     const delivery = $('#cWhatsappDelivery').value.replace(/\D/g, '');
@@ -1324,6 +1417,7 @@ function bindEvents() {
     await refreshSettings();
     toast('✅ Ajustes guardados', 'ok');
   });
+
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape') {
       closeCart(); $('#adminModal').classList.remove('show'); $('#loginModal').classList.remove('show');
@@ -1341,6 +1435,7 @@ function editProduct(id) {
   $('#pId').value = p.id; $('#pName').value = p.name; $('#pPrice').value = p.price;
   $('#pStock').value = p.stock ?? 0; $('#pCategory').value = p.category || '';
   $('#pImage').value = (p.image || '').startsWith('data:') ? '' : (p.image || '');
+  $('#pFile').value = '';
   $('#pDesc').value = p.description || '';
   $('#pFormTitle').textContent = 'Editar producto'; $('#pName').focus();
   $('#productForm').scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -1404,4 +1499,4 @@ async function init() {
 document.addEventListener('DOMContentLoaded', init);
 </script>
 </body>
-  </html>
+</html>
